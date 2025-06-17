@@ -7,7 +7,7 @@ import {
   clearApplicationStatus,
 } from '../../store/jobsSlice';
 import { useAuth } from '../../context/AuthContext';
-import Navbar from '../../component/Navbar/Navbar';
+import Navbar from "../../component/NavBar/Navbar";
 import Chatbot from '../../component/Chatbot/Chatbot';
 import {
   Container,
