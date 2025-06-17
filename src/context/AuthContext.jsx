@@ -46,6 +46,7 @@ const login = async (email, password) => {
     const token = response.data.token;
 
     const decodedToken = jwtDecode(token);
+    
     const { id, role } = decodedToken;
     console.log("Decoded Token:", decodedToken);
 
