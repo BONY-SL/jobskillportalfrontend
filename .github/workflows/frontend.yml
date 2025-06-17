@@ -1,0 +1,62 @@
+name: Deploy Vite Frontend to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies and build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Check build output directory
+        run: |
+          echo "Listing workspace root files:"
+          ls -la
+          echo "Listing dist directory contents:"
+          ls -la dist
+
+      - name: Upload build files to EC2
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          host: ${{ secrets.FRONTEND_EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "dist/*"
+          target: "~/frontend/dist"
+
+      - name: SSH and Deploy Nginx with Docker
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.FRONTEND_EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Stopping and removing existing vite-app container if it exists..."
+             CONTAINER_ID=$(docker ps -q --filter "publish=80")
+            if [ -n "$CONTAINER_ID" ]; then
+              echo "🛑 Stopping container on port 80"
+              docker stop $CONTAINER_ID
+              docker rm $CONTAINER_ID
+            fi
+            docker rm -f vite-app || true
+
+            echo "✅ Cloning the latest code..."
+            cd ~
+            rm -rf jobskillportalfrontend
+            git clone https://github.com/BONY-SL/jobskillportalfrontend.git
+            cd jobskillportalfrontend
+
+            echo "🚀 Starting new container..."
+            docker build -t vite-app .
+
+            echo "Running new vite-app container..."
+            docker run -d -p 80:80 --name vite-app vite-app
