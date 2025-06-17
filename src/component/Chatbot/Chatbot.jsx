@@ -52,6 +52,7 @@ const Chatbot = ({ job }) => {
     if (!job?.id) {
       setError("Job information is missing.");
       // Handle the case where job information is missing
+      // You can display an error message or take appropriate action
       return;
     }
 
