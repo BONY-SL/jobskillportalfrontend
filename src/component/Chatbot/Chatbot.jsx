@@ -51,6 +51,7 @@ const Chatbot = ({ job }) => {
   const detectIntent = async (text) => {
     if (!job?.id) {
       setError("Job information is missing.");
+      // Handle the case where job information is missing
       return;
     }
 
